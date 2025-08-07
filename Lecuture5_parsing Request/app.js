@@ -1,9 +1,8 @@
 const http = require('http')
-const fs = require('fs')
-
+ const fs = require('fs')
 const server = http.createServer((req, res) => {
-    // console.log(req.url, req.headers)
-
+    console.log(req.url, req.headers)
+    
     if (req.url === "/" && req.method === "GET") {
         res.setHeader('Content-Type', 'text/html')
         res.write('<html>')
@@ -21,7 +20,7 @@ const server = http.createServer((req, res) => {
         res.write('</html>')
         return res.end()
     }
-
+    
     if (req.url === "/contact" && req.method === "GET") {
         res.setHeader('Content-Type', 'text/html')
         res.write('<html>')
@@ -30,7 +29,7 @@ const server = http.createServer((req, res) => {
         res.write('</html>')
         return res.end()
     }
-
+    
     if (req.url === "/about" && req.method === "GET") {
         res.setHeader('Content-Type', 'text/html')
         res.write('<html>')
@@ -39,42 +38,43 @@ const server = http.createServer((req, res) => {
         res.write('</html>')
         return res.end()
     }
-
+    
     if (req.url === "/submit" && req.method === "POST") {
-        const body = []
 
-        req.on("data", chunk => {
+        req.on("data", chunk=>{
             console.log(chunk)
-            body.push(chunk)
         })
 
-        req.on("end", () => {
-            const fullBody = Buffer.concat(body).toString()
-            console.log("Form Data:", fullBody)
-            const params = new  URLSearchParams(fullBody)
+fs.writeFileSync('user.txt','Everest Paudel')
+res.statusCode =302;
+
+
+
+        let body = ''
+        req.on('data', chunk => {
+            body += chunk.toString()
+        })
+        req.on('end', () => {
+            const params = new URLSearchParams(body)
+            const name = params.get('name')
+            const email = params.get('email')
             
-
-           const bodyObject =Object.fromEntries(params)
-            console.log(bodyObject)
-
-
-            // Optional: parse the form data (basic)
-      
-
-            fs.writeFileSync('user.txt',JSON.stringify(bodyObject))
-
-            // Redirect after successful submission
-            res.statusCode = 302
-            // res.setHeader('Location', '/')
-            return res.end()
+            res.setHeader('Content-Type', 'text/html')
+            res.write('<html>')
+            res.write('<head><title>Form Submission</title></head>')
+            res.write('<body>')
+            res.write('<h1>Form Submission Received</h1>')
+            res.write(`<p>Name: ${name || 'Not provided'}</p>`)
+            res.write(`<p>Email: ${email || 'Not provided'}</p>`)
+            res.write('<a href="/">Back to Home</a>')
+            res.write('</body>')
+            res.write('</html>')
+            res.end()
         })
-
         return
     }
-
-    // Fallback for unknown routes
+    
     res.setHeader('Content-Type', 'text/html')
-    res.statusCode = 404
     res.write('<html>')
     res.write('<head><title>404 Not Found</title></head>')
     res.write('<body><h1>404 Page Not Found</h1></body>')
@@ -83,6 +83,7 @@ const server = http.createServer((req, res) => {
 })
 
 const PORT = 3000
+
 server.listen(PORT, () => {
     console.log("Server is listening on port", PORT)
 })
